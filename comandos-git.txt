@@ -1,0 +1,3 @@
+git add .
+git commit -m "Add Google Search Console meta verification"
+git push
