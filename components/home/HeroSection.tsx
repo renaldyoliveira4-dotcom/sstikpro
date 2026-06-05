@@ -177,7 +177,7 @@ export default function HeroSection() {
               <div className="p-4 flex flex-col sm:flex-row gap-2">
                 {video.hdPlay && (
                   <a
-                    href={`/api/proxy?url=${encodeURIComponent(video.hdPlay)}&filename=sstikpro-hd.mp4`}
+                    href={`/api/proxy?url=${encodeURIComponent(video.hdPlay)}&filename=sstikpro-hd.mp4&type=video`}
                     download="sstikpro-hd.mp4"
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
                     style={{ background: 'linear-gradient(135deg, #4F6D7A, #6B8793)' }}
@@ -188,7 +188,7 @@ export default function HeroSection() {
                 )}
                 {video.play && video.play !== video.hdPlay && (
                   <a
-                    href={`/api/proxy?url=${encodeURIComponent(video.play)}&filename=sstikpro-sd.mp4`}
+                    href={`/api/proxy?url=${encodeURIComponent(video.play)}&filename=sstikpro-sd.mp4&type=video`}
                     download="sstikpro-sd.mp4"
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 border"
                     style={{ color: '#4F6D7A', borderColor: '#4F6D7A' }}
@@ -199,7 +199,7 @@ export default function HeroSection() {
                 )}
                 {video.music && (
                   <a
-                    href={`/api/proxy?url=${encodeURIComponent(video.music)}&filename=sstikpro-music.mp3`}
+                    href={`/api/proxy?url=${encodeURIComponent(video.music)}&filename=sstikpro-music.mp3&type=audio`}
                     download="sstikpro-music.mp3"
                     className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 border"
                     style={{ color: '#64748B', borderColor: '#E2E8F0' }}
