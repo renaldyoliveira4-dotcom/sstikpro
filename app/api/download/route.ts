@@ -2,38 +2,49 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const { url } = await request.json()
+    const body = await request.json()
+    const { url } = body
 
     if (!url || !url.trim()) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    // Clean URL
     const cleanUrl = url.trim()
 
-    // Try tikwm.com API (free, no limit)
-    const response = await fetch(
-      `https://www.tikwm.com/api/?url=${encodeURIComponent(cleanUrl)}&hd=1`,
-      {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'application/json',
-          'Referer': 'https://www.tikwm.com/',
-        },
-        next: { revalidate: 0 }
-      }
-    )
+    // Using tikwm.com - free, no API key needed
+    const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(cleanUrl)}&hd=1`
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://www.tikwm.com/',
+        'Origin': 'https://www.tikwm.com',
+      },
+    })
 
     if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch video. Please try again.' }, { status: 500 })
+      return NextResponse.json({ 
+        error: 'Failed to process video. Please try again.' 
+      }, { status: 500 })
     }
 
-    const data = await response.json()
+    const text = await response.text()
+    
+    let data
+    try {
+      data = JSON.parse(text)
+    } catch {
+      return NextResponse.json({ 
+        error: 'Failed to parse response. Please try again.' 
+      }, { status: 500 })
+    }
 
     if (!data || data.code !== 0) {
       return NextResponse.json({ 
-        error: data?.msg || 'Video not found. Make sure the link is public and valid.' 
+        error: data?.msg || 'Video not found. Check if the link is public.' 
       }, { status: 404 })
     }
 
@@ -52,11 +63,13 @@ export async function POST(request: NextRequest) {
         play: videoData.play || null,
         music: videoData.music || null,
         duration: videoData.duration || 0,
-        size: videoData.size || 0,
       },
     })
+
   } catch (error) {
     console.error('[Download API Error]', error)
-    return NextResponse.json({ error: 'Internal server error. Please try again.' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error. Please try again.' 
+    }, { status: 500 })
   }
 }
