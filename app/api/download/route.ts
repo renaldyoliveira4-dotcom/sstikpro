@@ -43,11 +43,29 @@ export async function POST(request: NextRequest) {
 
     const v = data.data
 
-    // play = SD video, hdplay = HD video, music = audio only
-    // Make sure we never mix video and audio fields
-    const videoSD = v.play || null        // SD video (no watermark)
-    const videoHD = v.hdplay || null      // HD video (no watermark)
-    const musicUrl = v.music || null      // Audio only (MP3)
+    // Log all fields to debug
+    console.log('[TikWM Response Fields]', {
+      play: v.play?.substring(0, 60),
+      hdplay: v.hdplay?.substring(0, 60),
+      wmplay: v.wmplay?.substring(0, 60),
+      music: v.music?.substring(0, 60),
+      origin_cover: v.origin_cover?.substring(0, 60),
+    })
+
+    // play = SD video without watermark
+    // hdplay = HD video without watermark  
+    // wmplay = video WITH watermark
+    // music = audio only
+    
+    // Ensure hdplay is a video URL (contains .mp4 or /video/)
+    let videoHD = v.hdplay || null
+    let videoSD = v.play || null
+    const musicUrl = v.music || null
+
+    // If hdplay looks like audio (contains /music/ or .mp3), use play instead
+    if (videoHD && (videoHD.includes('/music/') || videoHD.includes('.mp3'))) {
+      videoHD = videoSD
+    }
 
     return NextResponse.json({
       success: true,
@@ -58,9 +76,9 @@ export async function POST(request: NextRequest) {
           name: v.author?.nickname || v.author?.unique_id || 'Unknown',
           avatar: v.author?.avatar || null,
         },
-        hdPlay: videoHD,    // HD video
-        play: videoSD,      // SD video
-        music: musicUrl,    // Audio MP3
+        hdPlay: videoHD,
+        play: videoSD,
+        music: musicUrl,
         duration: v.duration || 0,
       },
     })
