@@ -1,18 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, Link as LinkIcon, CheckCircle, Loader2, ShieldCheck, Zap, Star } from 'lucide-react'
+import { Download, Link as LinkIcon, CheckCircle, Loader2, ShieldCheck, Zap, Star, Music, User, AlertCircle } from 'lucide-react'
+
+type VideoResult = {
+  title: string
+  cover: string | null
+  author: { name: string; avatar: string | null }
+  hdPlay: string | null
+  play: string | null
+  music: string | null
+  duration: number
+}
 
 export default function HeroSection() {
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [video, setVideo] = useState<VideoResult | null>(null)
 
   const isValidTikTokUrl = (value: string) => {
     return value.includes('tiktok.com') || value.includes('vm.tiktok') || value.includes('vt.tiktok')
   }
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!url.trim()) {
       setErrorMsg('Please paste a TikTok URL first.')
       setStatus('error')
@@ -23,17 +34,39 @@ export default function HeroSection() {
       setStatus('error')
       return
     }
+
     setErrorMsg('')
     setStatus('loading')
-    setTimeout(() => {
+    setVideo(null)
+
+    try {
+      const res = await fetch('/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || !data.success) {
+        setErrorMsg(data.error || 'Failed to process video. Please try again.')
+        setStatus('error')
+        return
+      }
+
+      setVideo(data.video)
       setStatus('success')
-    }, 2000)
+    } catch (err) {
+      setErrorMsg('Connection error. Please try again.')
+      setStatus('error')
+    }
   }
 
   const handleReset = () => {
     setUrl('')
     setStatus('idle')
     setErrorMsg('')
+    setVideo(null)
   }
 
   return (
@@ -66,64 +99,134 @@ export default function HeroSection() {
 
         {/* Download Box */}
         <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6 max-w-2xl mx-auto">
-          {status === 'success' ? (
-            <div className="text-center py-4">
-              <CheckCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#22C55E' }} />
-              <h3 className="text-lg font-bold mb-1" style={{ color: '#1E293B' }}>Video Detected!</h3>
-              <p className="text-sm mb-4" style={{ color: '#64748B' }}>
-                Video processing feature coming soon. We&apos;ll notify you when it&apos;s ready!
-              </p>
-              <button
-                onClick={handleReset}
-                className="px-6 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #4F6D7A, #6B8793)' }}
-              >
-                Download Another
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
-                <input
-                  type="url"
-                  value={url}
-                  onChange={(e) => { setUrl(e.target.value); setStatus('idle'); setErrorMsg('') }}
-                  placeholder="Paste TikTok link here..."
-                  className="w-full pl-10 pr-4 py-3.5 rounded-xl border text-sm outline-none transition-colors"
-                  style={{
-                    borderColor: status === 'error' ? '#EF4444' : '#E2E8F0',
-                    color: '#1E293B',
-                    background: '#F8FAFC'
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && handleDownload()}
-                />
-              </div>
-              <button
-                onClick={handleDownload}
-                disabled={status === 'loading'}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-70 whitespace-nowrap"
-                style={{ background: 'linear-gradient(135deg, #4F6D7A, #6B8793)', minWidth: '140px' }}
-              >
-                {status === 'loading' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    DOWNLOAD
-                  </>
-                )}
-              </button>
-            </div>
-          )}
 
+          {/* Input always visible */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => { setUrl(e.target.value); setStatus('idle'); setErrorMsg(''); setVideo(null) }}
+                placeholder="Paste TikTok link here..."
+                className="w-full pl-10 pr-4 py-3.5 rounded-xl border text-sm outline-none transition-colors"
+                style={{
+                  borderColor: status === 'error' ? '#EF4444' : '#E2E8F0',
+                  color: '#1E293B',
+                  background: '#F8FAFC'
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleDownload()}
+              />
+            </div>
+            <button
+              onClick={handleDownload}
+              disabled={status === 'loading'}
+              className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-70 whitespace-nowrap"
+              style={{ background: 'linear-gradient(135deg, #4F6D7A, #6B8793)', minWidth: '140px' }}
+            >
+              {status === 'loading' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  DOWNLOAD
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Error message */}
           {errorMsg && (
-            <p className="mt-2 text-sm text-red-500 text-left">{errorMsg}</p>
+            <div className="mt-3 flex items-center gap-2 text-sm text-red-500">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {errorMsg}
+            </div>
           )}
 
+          {/* Success: Video Result */}
+          {status === 'success' && video && (
+            <div className="mt-5 border rounded-xl overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
+              {/* Video preview */}
+              <div className="flex items-center gap-3 p-4" style={{ background: '#F8FAFC' }}>
+                {video.cover && (
+                  <img
+                    src={video.cover}
+                    alt={video.title}
+                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                  />
+                )}
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>
+                    {video.title || 'TikTok Video'}
+                  </p>
+                  <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: '#64748B' }}>
+                    <User className="w-3 h-3" />
+                    {video.author.name}
+                    {video.duration > 0 && (
+                      <span className="ml-2">· {video.duration}s</span>
+                    )}
+                  </p>
+                </div>
+                <CheckCircle className="w-6 h-6 flex-shrink-0" style={{ color: '#22C55E' }} />
+              </div>
+
+              {/* Download buttons */}
+              <div className="p-4 flex flex-col sm:flex-row gap-2">
+                {video.hdPlay && (
+                  <a
+                    href={video.hdPlay}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg, #4F6D7A, #6B8793)' }}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download HD (No Watermark)
+                  </a>
+                )}
+                {video.play && video.play !== video.hdPlay && (
+                  <a
+                    href={video.play}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 border"
+                    style={{ color: '#4F6D7A', borderColor: '#4F6D7A' }}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download SD
+                  </a>
+                )}
+                {video.music && (
+                  <a
+                    href={video.music}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 border"
+                    style={{ color: '#64748B', borderColor: '#E2E8F0' }}
+                  >
+                    <Music className="w-4 h-4" />
+                    MP3
+                  </a>
+                )}
+              </div>
+
+              {/* Download another */}
+              <div className="px-4 pb-4">
+                <button
+                  onClick={handleReset}
+                  className="w-full py-2 text-xs font-medium transition-colors hover:underline"
+                  style={{ color: '#94A3B8' }}
+                >
+                  ↩ Download another video
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Trust badges */}
           {status === 'idle' && (
             <div className="flex items-center justify-center gap-4 mt-4 text-xs" style={{ color: '#94A3B8' }}>
               <span className="flex items-center gap-1">
