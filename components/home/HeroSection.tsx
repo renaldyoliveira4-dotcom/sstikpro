@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import PWAInstallButton from '@/components/ui/PWAInstallButton'
 import { Download, Link as LinkIcon, CheckCircle, Loader2, ShieldCheck, Zap, Star, Music, User, AlertCircle } from 'lucide-react'
 
 type VideoResult = {
@@ -82,9 +83,14 @@ export default function HeroSection() {
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 text-white text-sm font-medium mb-6 backdrop-blur-sm">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 text-white text-sm font-medium mb-4 backdrop-blur-sm">
           <Star className="w-3.5 h-3.5 fill-white" />
           <span>Free · No Registration · HD Quality</span>
+        </div>
+
+        {/* PWA Install Button */}
+        <div className="mb-6 flex justify-center">
+          <PWAInstallButton />
         </div>
 
         {/* Heading */}
