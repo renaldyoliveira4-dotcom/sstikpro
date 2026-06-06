@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import PageTracker from '@/components/ui/PageTracker'
 import Script from 'next/script'
 
 
@@ -10,7 +11,7 @@ import Script from 'next/script'
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || ''
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sstikpro.com'),
+  metadataBase: new URL('https://sstikpro.com.br'),
   title: {
     default: 'SSTikPro - Download TikTok Videos Without Watermark | Free HD Downloader',
     template: '%s | SSTikPro',
@@ -20,6 +21,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'SSTikPro' }],
   creator: 'SSTikPro',
   publisher: 'SSTikPro',
+  verification: {
+    google: 'EsX0cHkNCmLXjSKG8QluTps2MG4SxhB0U-9ixgftw5Y',
+    other: {
+      'monetag': '15d8690d3fec42c4e3144f2fc382e02e',
+    },
+  },
   robots: {
     index: true,
     follow: true,
@@ -34,7 +41,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://sstikpro.com',
+    url: 'https://sstikpro.com.br',
     siteName: 'SSTikPro',
     title: 'SSTikPro - Download TikTok Videos Without Watermark',
     description: 'Fast, free TikTok video downloader. Download HD quality videos without watermark. No registration required.',
@@ -97,6 +104,29 @@ export default function RootLayout({
               `}</Script>
           </>
         )}
+        {/* Google Ads */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18214100783"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'AW-18214100783');
+        `}</Script>
+        {/* Adsterra */}
+        <Script
+          src="https://pl29648216.effectivecpmnetwork.com/75/2b/7b/752b7b9b3779d9646a528cded4657ff0.js"
+          strategy="afterInteractive"
+        />
+        {/* Monetag */}
+        <Script
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="246206"
+          strategy="afterInteractive"
+        />
+        <PageTracker />
         <Header />
         <main className="flex-1">
           {children}
