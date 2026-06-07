@@ -9,7 +9,7 @@ import { faqs } from '@/lib/faq-data'
 export const metadata: Metadata = {
   title: 'SSTikPro - Download TikTok Videos Without Watermark | Free HD Downloader',
   description: 'Download TikTok videos without watermark for free. Fast, HD quality, no registration required. Works on iPhone, Android, and Desktop.',
-  alternates: { canonical: 'https://sstikpro.com' },
+  alternates: { canonical: 'https://sstikpro.com.br' },
 }
 
 const jsonLdSoftware = {
@@ -66,6 +66,34 @@ export default function HomePage() {
 
       {/* FAQ */}
       <FAQSection />
+
+      {/* Telegram CTA */}
+      <section className="py-10" style={{ background: '#F8FAFC' }}>
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <div className="bg-white rounded-2xl p-6 border shadow-sm flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderColor: '#E2E8F0' }}>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#229ED9' }}>
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 14.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.496.969z"/>
+                </svg>
+              </div>
+              <div className="text-left">
+                <h3 className="font-bold text-base" style={{ color: '#1E293B' }}>Entre no nosso grupo do Telegram!</h3>
+                <p className="text-sm" style={{ color: '#64748B' }}>Dicas, novidades e suporte em primeira mão</p>
+              </div>
+            </div>
+            <a
+              href="https://t.me/+CItjrX7UUoIwNjZh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
+              style={{ background: '#229ED9' }}
+            >
+              📱 Entrar no Grupo
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-16" style={{ background: 'linear-gradient(135deg, #4F6D7A 0%, #89A5B1 100%)' }}>

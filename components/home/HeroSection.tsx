@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import PWAInstallButton from '@/components/ui/PWAInstallButton'
 import { Download, Link as LinkIcon, CheckCircle, Loader2, ShieldCheck, Zap, Star, Music, User, AlertCircle } from 'lucide-react'
+import PWAInstallButton from '@/components/ui/PWAInstallButton'
 
 type VideoResult = {
   title: string
@@ -14,24 +14,30 @@ type VideoResult = {
   duration: number
 }
 
+type Platform = 'tiktok' | 'youtube'
+
 export default function HeroSection() {
   const [url, setUrl] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [video, setVideo] = useState<VideoResult | null>(null)
+  const [platform, setPlatform] = useState<Platform>('tiktok')
 
-  const isValidTikTokUrl = (value: string) => {
-    return value.includes('tiktok.com') || value.includes('vm.tiktok') || value.includes('vt.tiktok')
+  const isValidUrl = (value: string) => {
+    if (platform === 'tiktok') {
+      return value.includes('tiktok.com') || value.includes('vm.tiktok') || value.includes('vt.tiktok')
+    }
+    return value.includes('youtube.com') || value.includes('youtu.be')
   }
 
   const handleDownload = async () => {
     if (!url.trim()) {
-      setErrorMsg('Please paste a TikTok URL first.')
+      setErrorMsg(`Please paste a ${platform === 'tiktok' ? 'TikTok' : 'YouTube'} URL first.`)
       setStatus('error')
       return
     }
-    if (!isValidTikTokUrl(url)) {
-      setErrorMsg('Please enter a valid TikTok link.')
+    if (!isValidUrl(url)) {
+      setErrorMsg(`Please enter a valid ${platform === 'tiktok' ? 'TikTok' : 'YouTube'} link.`)
       setStatus('error')
       return
     }
@@ -41,13 +47,20 @@ export default function HeroSection() {
     setVideo(null)
 
     try {
-      const res = await fetch('/api/download', {
+      const endpoint = platform === 'tiktok' ? '/api/download' : '/api/youtube'
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       })
 
       const data = await res.json()
+
+      if (data.comingSoon) {
+        setErrorMsg('🚀 YouTube download coming soon! Use TikTok downloader for now.')
+        setStatus('error')
+        return
+      }
 
       if (!res.ok || !data.success) {
         setErrorMsg(data.error || 'Failed to process video. Please try again.')
@@ -57,7 +70,7 @@ export default function HeroSection() {
 
       setVideo(data.video)
       setStatus('success')
-    } catch (err) {
+    } catch {
       setErrorMsg('Connection error. Please try again.')
       setStatus('error')
     }
@@ -70,14 +83,20 @@ export default function HeroSection() {
     setVideo(null)
   }
 
+  const placeholder = platform === 'tiktok' 
+    ? 'Paste TikTok link here...' 
+    : 'Paste YouTube link here...'
+
   return (
     <section className="relative overflow-hidden py-16 md:py-24">
       {/* Background */}
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #4F6D7A 0%, #6B8793 60%, #89A5B1 100%)' }} />
+      <div className="absolute inset-0" style={{ background: platform === 'tiktok' 
+        ? 'linear-gradient(135deg, #4F6D7A 0%, #6B8793 60%, #89A5B1 100%)'
+        : 'linear-gradient(135deg, #C00 0%, #8B0000 60%, #CC0000 100%)' 
+      }} />
       <div className="absolute inset-0 opacity-10" style={{
         backgroundImage: `radial-gradient(circle at 20% 80%, white 1px, transparent 1px),
-          radial-gradient(circle at 80% 20%, white 1px, transparent 1px),
-          radial-gradient(circle at 50% 50%, white 1px, transparent 1px)`,
+          radial-gradient(circle at 80% 20%, white 1px, transparent 1px)`,
         backgroundSize: '60px 60px'
       }} />
 
@@ -93,20 +112,50 @@ export default function HeroSection() {
           <PWAInstallButton />
         </div>
 
+        {/* Platform Tabs */}
+        <div className="inline-flex rounded-2xl p-1 mb-8 gap-1" style={{ background: 'rgba(0,0,0,0.2)' }}>
+          <button
+            onClick={() => { setPlatform('tiktok'); handleReset() }}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
+            style={{
+              background: platform === 'tiktok' ? 'white' : 'transparent',
+              color: platform === 'tiktok' ? '#4F6D7A' : 'rgba(255,255,255,0.8)',
+            }}
+          >
+            🎵 TikTok
+          </button>
+          <button
+            onClick={() => { setPlatform('youtube'); handleReset() }}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
+            style={{
+              background: platform === 'youtube' ? 'white' : 'transparent',
+              color: platform === 'youtube' ? '#C00' : 'rgba(255,255,255,0.8)',
+            }}
+          >
+            ▶️ YouTube
+          </button>
+        </div>
+
         {/* Heading */}
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4">
-          Download TikTok Videos<br className="hidden md:block" />
-          <span className="text-yellow-300"> Without Watermark</span>
+          {platform === 'tiktok' ? (
+            <>Download TikTok Videos<br className="hidden md:block" />
+            <span className="text-yellow-300"> Without Watermark</span></>
+          ) : (
+            <>Download YouTube Videos<br className="hidden md:block" />
+            <span className="text-yellow-300"> In HD Quality</span></>
+          )}
         </h1>
 
         <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-          Fast, Free and High Quality Video Downloader. Save TikTok videos in HD quality with no watermark in seconds.
+          {platform === 'tiktok'
+            ? 'Fast, Free and High Quality Video Downloader. Save TikTok videos in HD quality with no watermark in seconds.'
+            : 'Fast, Free YouTube Video Downloader. Save YouTube videos in HD quality directly to your device.'
+          }
         </p>
 
         {/* Download Box */}
         <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6 max-w-2xl mx-auto">
-
-          {/* Input always visible */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94A3B8' }} />
@@ -114,7 +163,7 @@ export default function HeroSection() {
                 type="url"
                 value={url}
                 onChange={(e) => { setUrl(e.target.value); setStatus('idle'); setErrorMsg(''); setVideo(null) }}
-                placeholder="Paste TikTok link here..."
+                placeholder={placeholder}
                 className="w-full pl-10 pr-4 py-3.5 rounded-xl border text-sm outline-none transition-colors"
                 style={{
                   borderColor: status === 'error' ? '#EF4444' : '#E2E8F0',
@@ -128,23 +177,21 @@ export default function HeroSection() {
               onClick={handleDownload}
               disabled={status === 'loading'}
               className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-70 whitespace-nowrap"
-              style={{ background: 'linear-gradient(135deg, #4F6D7A, #6B8793)', minWidth: '140px' }}
+              style={{ 
+                background: platform === 'tiktok' 
+                  ? 'linear-gradient(135deg, #4F6D7A, #6B8793)' 
+                  : 'linear-gradient(135deg, #CC0000, #8B0000)',
+                minWidth: '140px' 
+              }}
             >
               {status === 'loading' ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
+                <><Loader2 className="w-4 h-4 animate-spin" />Processing...</>
               ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  DOWNLOAD
-                </>
+                <><Download className="w-4 h-4" />DOWNLOAD</>
               )}
             </button>
           </div>
 
-          {/* Error message */}
           {errorMsg && (
             <div className="mt-3 flex items-center gap-2 text-sm text-red-500">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -152,44 +199,35 @@ export default function HeroSection() {
             </div>
           )}
 
-          {/* Success: Video Result */}
           {status === 'success' && video && (
             <div className="mt-5 border rounded-xl overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
-              {/* Video preview */}
               <div className="flex items-center gap-3 p-4" style={{ background: '#F8FAFC' }}>
                 {video.cover && (
-                  <img
-                    src={video.cover}
-                    alt={video.title}
-                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                  />
+                  <img src={video.cover} alt={video.title} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
                 )}
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-semibold truncate" style={{ color: '#1E293B' }}>
-                    {video.title || 'TikTok Video'}
+                    {video.title || 'Video'}
                   </p>
                   <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: '#64748B' }}>
                     <User className="w-3 h-3" />
                     {video.author.name}
-                    {video.duration > 0 && (
-                      <span className="ml-2">· {video.duration}s</span>
-                    )}
+                    {video.duration > 0 && <span className="ml-2">· {video.duration}s</span>}
                   </p>
                 </div>
                 <CheckCircle className="w-6 h-6 flex-shrink-0" style={{ color: '#22C55E' }} />
               </div>
 
-              {/* Download buttons */}
               <div className="p-4 flex flex-col sm:flex-row gap-2">
                 {video.hdPlay && (
                   <a
                     href={`/api/proxy?url=${encodeURIComponent(video.hdPlay)}&filename=sstikpro-hd.mp4&type=video`}
                     download="sstikpro-hd.mp4"
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
-                    style={{ background: 'linear-gradient(135deg, #4F6D7A, #6B8793)' }}
+                    style={{ background: platform === 'tiktok' ? 'linear-gradient(135deg, #4F6D7A, #6B8793)' : 'linear-gradient(135deg, #CC0000, #8B0000)' }}
                   >
                     <Download className="w-4 h-4" />
-                    Download HD (No Watermark)
+                    Download HD
                   </a>
                 )}
                 {video.play && video.play !== video.hdPlay && (
@@ -216,7 +254,6 @@ export default function HeroSection() {
                 )}
               </div>
 
-              {/* Download another */}
               <div className="px-4 pb-4">
                 <button
                   onClick={handleReset}
@@ -229,7 +266,6 @@ export default function HeroSection() {
             </div>
           )}
 
-          {/* Trust badges */}
           {status === 'idle' && (
             <div className="flex items-center justify-center gap-4 mt-4 text-xs" style={{ color: '#94A3B8' }}>
               <span className="flex items-center gap-1">
