@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 async function fallbackInstagram(url: string): Promise<NextResponse> {
   try {
     // Extract shortcode from URL
-    const shortcode = url.match(/\/(p|reel|tv)\/([^/?]+)/)?.[2]
+    const shortcode = url.match(/\/(p|reels?|tv)\/([^/?]+)/)?.[2]
     if (!shortcode) {
       return NextResponse.json({ error: 'Invalid Instagram URL.' }, { status: 400 })
     }
