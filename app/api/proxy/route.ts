@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit, getIP } from '@/lib/rateLimit'
 
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = getIP(request)
+    if (!checkRateLimit(ip, 20, 60000)) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+    }
+
     const { searchParams } = new URL(request.url)
     const url = searchParams.get('url')
     const filename = searchParams.get('filename') || 'sstikpro-video.mp4'

@@ -42,7 +42,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     description: post.excerpt,
     datePublished: post.created_at,
     author: { '@type': 'Organization', name: 'SSTikPro' },
-    publisher: { '@type': 'Organization', name: 'SSTikPro', url: 'https://sstikpro.com' },
+    publisher: { '@type': 'Organization', name: 'SSTikPro', url: 'https://sstikpro.com.br' },
   }
 
   return (
@@ -100,7 +100,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 {/* Content */}
                 <div
                   className="prose-custom"
-                  dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br/>').replace(/## (.*)/g, '<h2>$1</h2>').replace(/### (.*)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/- (.*)/g, '<li>$1</li>') }}
+                  dangerouslySetInnerHTML={{ __html: post.content
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\n/g, '<br/>')
+                    .replace(/## (.*)/g, '<h2>$1</h2>')
+                    .replace(/### (.*)/g, '<h3>$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/- (.*)/g, '<li>$1</li>') }}
                 />
 
                 {/* Nav */}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit, getIP } from '@/lib/rateLimit'
 
 export async function POST(request: NextRequest) {
   return NextResponse.json({
