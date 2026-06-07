@@ -18,12 +18,12 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.RAPIDAPI_KEY || '892d78fc6emshf30864c5fee92d5p15a518jsn3c1faa1ce10e'
 
     const res = await fetch(
-      `https://instagram-reels-downloader-api.p.rapidapi.com/download?url=${encodeURIComponent(cleanUrl)}`,
+      `https://instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com/convert?url=${encodeURIComponent(cleanUrl)}`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-rapidapi-host': 'instagram-reels-downloader-api.p.rapidapi.com',
+          'x-rapidapi-host': 'instagram-downloader-download-instagram-stories-videos4.p.rapidapi.com',
           'x-rapidapi-key': apiKey,
         },
         signal: AbortSignal.timeout(15000),
@@ -38,37 +38,37 @@ export async function POST(request: NextRequest) {
     const data = await res.json()
     console.log('[Instagram API Response]', JSON.stringify(data).substring(0, 300))
 
-    // Extract video URL from response
-    const videoUrl = data?.url || 
-                     data?.video_url || 
+    // Extract video URL - try all possible fields
+    const videoUrl = data?.video ||
+                     data?.url ||
+                     data?.video_url ||
                      data?.download_url ||
                      data?.result?.url ||
-                     data?.result?.video_url ||
+                     data?.result?.video ||
                      data?.data?.url ||
-                     data?.data?.video_url ||
+                     data?.media?.[0]?.url ||
                      null
 
-    const thumbnail = data?.thumbnail || 
-                      data?.image || 
+    const thumbnail = data?.thumbnail ||
+                      data?.image ||
+                      data?.cover ||
                       data?.result?.thumbnail ||
-                      data?.data?.thumbnail ||
                       null
 
-    const title = data?.title || 
-                  data?.caption || 
-                  data?.result?.title ||
-                  data?.data?.caption ||
+    const title = data?.title ||
+                  data?.caption ||
+                  data?.description ||
                   'Instagram Video'
 
-    const author = data?.owner?.username || 
-                   data?.author?.username ||
-                   data?.result?.owner?.username ||
+    const author = data?.owner?.username ||
+                   data?.author ||
+                   data?.username ||
                    'Instagram'
 
     if (!videoUrl) {
-      console.error('[Instagram API] No video URL in response:', JSON.stringify(data))
-      return NextResponse.json({ 
-        error: 'Could not get download link. Make sure the account is public.' 
+      console.error('[Instagram API] No video URL:', JSON.stringify(data))
+      return NextResponse.json({
+        error: 'Could not get download link. Make sure the account is public.'
       }, { status: 404 })
     }
 
