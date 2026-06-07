@@ -9,112 +9,84 @@ export async function POST(request: NextRequest) {
     }
 
     const cleanUrl = url.trim()
-
     const isInstagram = cleanUrl.includes('instagram.com') || cleanUrl.includes('instagr.am')
+
     if (!isInstagram) {
       return NextResponse.json({ error: 'Please enter a valid Instagram URL.' }, { status: 400 })
     }
 
-    // Try multiple APIs
-    const apis = [
-      () => trySnapInstagram(cleanUrl),
-      () => tryRapidAPIInstagram(cleanUrl),
-    ]
+    const apiKey = process.env.RAPIDAPI_KEY || '892d78fc6emshf30864c5fee92d5p15a518jsn3c1faa1ce10e'
 
-    for (const api of apis) {
-      try {
-        const result = await api()
-        if (result) return result
-      } catch {
-        continue
+    const res = await fetch(
+      `https://instagram-reels-downloader-api.p.rapidapi.com/download?url=${encodeURIComponent(cleanUrl)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': 'instagram-reels-downloader-api.p.rapidapi.com',
+          'x-rapidapi-key': apiKey,
+        },
+        signal: AbortSignal.timeout(15000),
       }
+    )
+
+    if (!res.ok) {
+      console.error('[Instagram API] Status:', res.status)
+      return NextResponse.json({ error: 'Failed to fetch video.' }, { status: 500 })
     }
 
-    return NextResponse.json({ 
-      error: 'Could not download this video. Make sure it is from a public account.' 
-    }, { status: 404 })
+    const data = await res.json()
+    console.log('[Instagram API Response]', JSON.stringify(data).substring(0, 300))
+
+    // Extract video URL from response
+    const videoUrl = data?.url || 
+                     data?.video_url || 
+                     data?.download_url ||
+                     data?.result?.url ||
+                     data?.result?.video_url ||
+                     data?.data?.url ||
+                     data?.data?.video_url ||
+                     null
+
+    const thumbnail = data?.thumbnail || 
+                      data?.image || 
+                      data?.result?.thumbnail ||
+                      data?.data?.thumbnail ||
+                      null
+
+    const title = data?.title || 
+                  data?.caption || 
+                  data?.result?.title ||
+                  data?.data?.caption ||
+                  'Instagram Video'
+
+    const author = data?.owner?.username || 
+                   data?.author?.username ||
+                   data?.result?.owner?.username ||
+                   'Instagram'
+
+    if (!videoUrl) {
+      console.error('[Instagram API] No video URL in response:', JSON.stringify(data))
+      return NextResponse.json({ 
+        error: 'Could not get download link. Make sure the account is public.' 
+      }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      video: {
+        title,
+        cover: thumbnail,
+        author: { name: author, avatar: null },
+        hdPlay: videoUrl,
+        play: videoUrl,
+        music: null,
+        duration: data?.duration || 0,
+      },
+    })
 
   } catch (error) {
     console.error('[Instagram Error]', error)
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 })
-  }
-}
-
-async function trySnapInstagram(url: string): Promise<NextResponse | null> {
-  try {
-    const res = await fetch('https://snapsave.app/action.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': 'https://snapsave.app/',
-        'Origin': 'https://snapsave.app',
-      },
-      body: `url=${encodeURIComponent(url)}`,
-      signal: AbortSignal.timeout(10000),
-    })
-
-    if (!res.ok) return null
-
-    const html = await res.text()
-
-    // Extract video URL from response
-    const videoMatch = html.match(/href="(https:\/\/[^"]+\.mp4[^"]*)"/)
-    if (!videoMatch) return null
-
-    const videoUrl = videoMatch[1].replace(/&amp;/g, '&')
-
-    return NextResponse.json({
-      success: true,
-      video: {
-        title: 'Instagram Video',
-        cover: null,
-        author: { name: 'Instagram', avatar: null },
-        hdPlay: videoUrl,
-        play: videoUrl,
-        music: null,
-        duration: 0,
-      },
-    })
-  } catch {
-    return null
-  }
-}
-
-async function tryRapidAPIInstagram(url: string): Promise<NextResponse | null> {
-  try {
-    const apiKey = process.env.RAPIDAPI_KEY
-    if (!apiKey) return null
-
-    const res = await fetch(
-      `https://instagram-reels-and-posts-downloader.p.rapidapi.com/download?url=${encodeURIComponent(url)}`,
-      {
-        headers: {
-          'x-rapidapi-host': 'instagram-reels-and-posts-downloader.p.rapidapi.com',
-          'x-rapidapi-key': apiKey,
-        },
-        signal: AbortSignal.timeout(10000),
-      }
-    )
-
-    if (!res.ok) return null
-
-    const data = await res.json()
-    if (!data?.result?.video_url) return null
-
-    return NextResponse.json({
-      success: true,
-      video: {
-        title: data.result.caption || 'Instagram Video',
-        cover: data.result.thumbnail_url || null,
-        author: { name: data.result.username || 'Instagram', avatar: null },
-        hdPlay: data.result.video_url,
-        play: data.result.video_url,
-        music: null,
-        duration: 0,
-      },
-    })
-  } catch {
-    return null
   }
 }

@@ -60,7 +60,11 @@ export default function HeroSection() {
       const data = await res.json()
 
       if (data.comingSoon) {
-        setErrorMsg('🚀 YouTube download coming soon! Use TikTok downloader for now.')
+        if (platform === 'instagram') {
+          setErrorMsg('📸 Instagram download coming soon! Use TikTok downloader for now.')
+        } else {
+          setErrorMsg('🚀 YouTube download coming soon! Use TikTok downloader for now.')
+        }
         setStatus('error')
         return
       }
