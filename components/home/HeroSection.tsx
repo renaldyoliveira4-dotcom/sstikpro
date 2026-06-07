@@ -14,7 +14,7 @@ type VideoResult = {
   duration: number
 }
 
-type Platform = 'tiktok' | 'youtube'
+type Platform = 'tiktok' | 'instagram' | 'youtube'
 
 export default function HeroSection() {
   const [url, setUrl] = useState('')
@@ -26,6 +26,9 @@ export default function HeroSection() {
   const isValidUrl = (value: string) => {
     if (platform === 'tiktok') {
       return value.includes('tiktok.com') || value.includes('vm.tiktok') || value.includes('vt.tiktok')
+    }
+    if (platform === 'instagram') {
+      return value.includes('instagram.com') || value.includes('instagr.am')
     }
     return value.includes('youtube.com') || value.includes('youtu.be')
   }
@@ -47,7 +50,7 @@ export default function HeroSection() {
     setVideo(null)
 
     try {
-      const endpoint = platform === 'tiktok' ? '/api/download' : '/api/youtube'
+      const endpoint = platform === 'tiktok' ? '/api/download' : platform === 'instagram' ? '/api/instagram' : '/api/youtube'
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,6 +88,7 @@ export default function HeroSection() {
 
   const placeholder = platform === 'tiktok' 
     ? 'Paste TikTok link here...' 
+    : platform === 'instagram' ? 'Paste Instagram link here...'
     : 'Paste YouTube link here...'
 
   return (
@@ -92,6 +96,7 @@ export default function HeroSection() {
       {/* Background */}
       <div className="absolute inset-0" style={{ background: platform === 'tiktok' 
         ? 'linear-gradient(135deg, #4F6D7A 0%, #6B8793 60%, #89A5B1 100%)'
+        : platform === 'instagram' ? 'linear-gradient(135deg, #833AB4 0%, #E1306C 50%, #F77737 100%)'
         : 'linear-gradient(135deg, #C00 0%, #8B0000 60%, #CC0000 100%)' 
       }} />
       <div className="absolute inset-0 opacity-10" style={{
@@ -125,6 +130,16 @@ export default function HeroSection() {
             🎵 TikTok
           </button>
           <button
+            onClick={() => { setPlatform('instagram'); handleReset() }}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
+            style={{
+              background: platform === 'instagram' ? 'white' : 'transparent',
+              color: platform === 'instagram' ? '#E1306C' : 'rgba(255,255,255,0.8)',
+            }}
+          >
+            📸 Instagram
+          </button>
+          <button
             onClick={() => { setPlatform('youtube'); handleReset() }}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
             style={{
@@ -141,6 +156,9 @@ export default function HeroSection() {
           {platform === 'tiktok' ? (
             <>Download TikTok Videos<br className="hidden md:block" />
             <span className="text-yellow-300"> Without Watermark</span></>
+          ) : platform === 'instagram' ? (
+            <>Download Instagram Reels<br className="hidden md:block" />
+            <span className="text-yellow-300"> Without Watermark</span></>
           ) : (
             <>Download YouTube Videos<br className="hidden md:block" />
             <span className="text-yellow-300"> In HD Quality</span></>
@@ -150,6 +168,8 @@ export default function HeroSection() {
         <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
           {platform === 'tiktok'
             ? 'Fast, Free and High Quality Video Downloader. Save TikTok videos in HD quality with no watermark in seconds.'
+            : platform === 'instagram'
+            ? 'Download Instagram Reels and videos for free. Save in HD quality without watermark in seconds.'
             : 'Fast, Free YouTube Video Downloader. Save YouTube videos in HD quality directly to your device.'
           }
         </p>
@@ -224,7 +244,7 @@ export default function HeroSection() {
                     href={`/api/proxy?url=${encodeURIComponent(video.hdPlay)}&filename=sstikpro-hd.mp4&type=video`}
                     download="sstikpro-hd.mp4"
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
-                    style={{ background: platform === 'tiktok' ? 'linear-gradient(135deg, #4F6D7A, #6B8793)' : 'linear-gradient(135deg, #CC0000, #8B0000)' }}
+                    style={{ background: platform === 'tiktok' ? 'linear-gradient(135deg, #4F6D7A, #6B8793)' : platform === 'instagram' ? 'linear-gradient(135deg, #833AB4, #E1306C)' : 'linear-gradient(135deg, #CC0000, #8B0000)' }}
                   >
                     <Download className="w-4 h-4" />
                     Download HD
