@@ -1,5 +1,4 @@
-// lib/analytics.ts
-// Google Analytics 4 events for SSTikPro
+// lib/analytics.ts - GA4 + Supabase events
 
 declare global {
   interface Window {
@@ -10,101 +9,88 @@ declare global {
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-P4RV812JP4'
 
-// Base event function
-function sendEvent(eventName: string, params?: Record<string, unknown>) {
+// Send to GA4
+function sendGA4(eventName: string, params?: Record<string, unknown>) {
   try {
-    if (typeof window === 'undefined') return
-    if (!window.gtag) return
-
-    window.gtag('event', eventName, {
-      send_to: GA_ID,
-      ...params,
-    })
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[GA4 Event] ${eventName}`, params)
-    }
-  } catch (error) {
-    console.error('[GA4 Error]', error)
-  }
+    if (typeof window === 'undefined' || !window.gtag) return
+    window.gtag('event', eventName, { send_to: GA_ID, ...params })
+  } catch {}
 }
 
-// ===== EVENTOS SSTIKPRO =====
+// Send to Supabase
+async function sendSupabase(eventName: string, data?: Record<string, unknown>) {
+  try {
+    await fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_name: eventName, ...data }),
+    })
+  } catch {}
+}
 
-// 1. Usuário colou um link
+// Combined event
+function track(eventName: string, params?: Record<string, unknown>) {
+  sendGA4(eventName, params)
+  sendSupabase(eventName, params)
+}
+
+// ===== EVENTOS =====
+
 export function trackLinkColado(platform: string, url: string) {
   try {
-    sendEvent('link_colado', {
+    track('link_colado', {
       platform,
       url_domain: new URL(url).hostname,
       event_category: 'engagement',
-      event_label: platform,
     })
   } catch {
-    sendEvent('link_colado', { platform, event_category: 'engagement' })
+    track('link_colado', { platform, event_category: 'engagement' })
   }
 }
 
-// 2. Usuário clicou em baixar
 export function trackCliqueBaixar(platform: string) {
-  sendEvent('clique_baixar', {
+  track('clique_baixar', {
     platform,
     event_category: 'engagement',
-    event_label: platform,
   })
 }
 
-// 3. Download concluído com sucesso
 export function trackDownloadSucesso(platform: string, quality: string) {
-  sendEvent('download_sucesso', {
+  track('download_sucesso', {
     platform,
     quality,
     event_category: 'conversion',
-    event_label: `${platform}_${quality}`,
     value: 1,
   })
 }
 
-// 4. Erro no download
 export function trackDownloadErro(platform: string, errorMsg: string) {
-  sendEvent('download_erro', {
+  track('download_erro', {
     platform,
     error_message: errorMsg,
     event_category: 'error',
-    event_label: platform,
   })
 }
 
-// 5. Visualização de página
 export function trackPageView(path: string) {
-  sendEvent('page_view', {
+  sendGA4('page_view', {
     page_path: path,
     page_title: typeof document !== 'undefined' ? document.title : '',
-    event_category: 'navigation',
   })
 }
 
-// 6. Clique no botão instalar PWA
-export function trackPWAInstall(outcome: 'accepted' | 'dismissed') {
-  sendEvent('pwa_install', {
-    outcome,
-    event_category: 'engagement',
-  })
-}
-
-// 7. Clique no Telegram
-export function trackTelegramClick() {
-  sendEvent('telegram_click', {
-    event_category: 'social',
-    event_label: 'telegram_group',
-  })
-}
-
-// 8. Troca de plataforma
 export function trackPlatformSwitch(from: string, to: string) {
-  sendEvent('platform_switch', {
+  track('platform_switch', {
     from_platform: from,
     to_platform: to,
     event_category: 'engagement',
   })
+}
+
+export function trackPWAInstall(outcome: 'accepted' | 'dismissed') {
+  track('pwa_install', { outcome, event_category: 'engagement' })
+}
+
+export function trackTelegramClick() {
+  track('telegram_click', { event_category: 'social' })
 }
