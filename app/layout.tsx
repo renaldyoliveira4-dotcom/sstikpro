@@ -115,17 +115,8 @@ export default function RootLayout({
           gtag('js', new Date());
           gtag('config', 'AW-18214100783');
         `}</Script>
-        {/* Adsterra */}
-        <Script
-          src="https://pl29648216.effectivecpmnetwork.com/75/2b/7b/752b7b9b3779d9646a528cded4657ff0.js"
-          strategy="afterInteractive"
-        />
-        {/* Monetag */}
-        <Script
-          src="https://quge5.com/88/tag.min.js"
-          data-zone="246206"
-          strategy="afterInteractive"
-        />
+
+
         <PageTracker />
         <Header />
         <main className="flex-1">
