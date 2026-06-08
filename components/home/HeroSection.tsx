@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { trackLinkColado, trackCliqueBaixar, trackDownloadSucesso, trackDownloadErro, trackPlatformSwitch } from '@/lib/analytics'
 import { Download, Link as LinkIcon, CheckCircle, Loader2, ShieldCheck, Zap, Star, Music, User, AlertCircle } from 'lucide-react'
 import PWAInstallButton from '@/components/ui/PWAInstallButton'
 
@@ -48,6 +49,7 @@ export default function HeroSection() {
     setErrorMsg('')
     setStatus('loading')
     setVideo(null)
+    trackCliqueBaixar(platform)
 
     try {
       const endpoint = platform === 'tiktok' ? '/api/download' : platform === 'instagram' ? '/api/instagram' : '/api/youtube'
@@ -77,6 +79,7 @@ export default function HeroSection() {
 
       setVideo(data.video)
       setStatus('success')
+      trackDownloadSucesso(platform, 'hd')
     } catch {
       setErrorMsg('Connection error. Please try again.')
       setStatus('error')
@@ -124,7 +127,7 @@ export default function HeroSection() {
         {/* Platform Tabs */}
         <div className="inline-flex rounded-2xl p-1 mb-8 gap-1" style={{ background: 'rgba(0,0,0,0.2)' }}>
           <button
-            onClick={() => { setPlatform('tiktok'); handleReset() }}
+            onClick={() => { trackPlatformSwitch(platform, 'tiktok'); setPlatform('tiktok'); handleReset() }}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
             style={{
               background: platform === 'tiktok' ? 'white' : 'transparent',
@@ -134,7 +137,7 @@ export default function HeroSection() {
             🎵 TikTok
           </button>
           <button
-            onClick={() => { setPlatform('instagram'); handleReset() }}
+            onClick={() => { trackPlatformSwitch(platform, 'instagram'); setPlatform('instagram'); handleReset() }}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
             style={{
               background: platform === 'instagram' ? 'white' : 'transparent',
@@ -144,7 +147,7 @@ export default function HeroSection() {
             📸 Instagram
           </button>
           <button
-            onClick={() => { setPlatform('youtube'); handleReset() }}
+            onClick={() => { trackPlatformSwitch(platform, 'youtube'); setPlatform('youtube'); handleReset() }}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
             style={{
               background: platform === 'youtube' ? 'white' : 'transparent',
@@ -186,7 +189,7 @@ export default function HeroSection() {
               <input
                 type="url"
                 value={url}
-                onChange={(e) => { setUrl(e.target.value); setStatus('idle'); setErrorMsg(''); setVideo(null) }}
+                onChange={(e) => { setUrl(e.target.value); setStatus('idle'); setErrorMsg(''); setVideo(null); if(e.target.value.length > 20) trackLinkColado(platform, e.target.value) }}
                 placeholder={placeholder}
                 className="w-full pl-10 pr-4 py-3.5 rounded-xl border text-sm outline-none transition-colors"
                 style={{
