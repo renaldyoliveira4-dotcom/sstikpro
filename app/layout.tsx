@@ -104,6 +104,20 @@ export default function RootLayout({
               `}</Script>
           </>
         )}
+        {/* Monetag Push Notification - aceito pelo Google Ads */}
+        <Script
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="246206"
+          data-sdk="show_8602633"
+          strategy="afterInteractive"
+        />
+
+        {/* Adsterra Popunder */}
+        <Script
+          src="https://pl29648216.effectivecpmnetwork.com/75/2b/7b/752b7b9b3779d9646a528cded4657ff0.js"
+          strategy="afterInteractive"
+        />
+
         {/* Google Ads */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-18214100783"
