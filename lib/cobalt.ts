@@ -1,21 +1,4 @@
-// Cobalt API - Open source media downloader
-// Supports: TikTok, YouTube, Instagram, Twitter, Reddit and 20+ platforms
-
-const COBALT_INSTANCES = [
-  'https://cobalt.api.bm4.de',
-  'https://api.cobalt.tools',
-  'https://cobalt.plexar.io',
-]
-
-interface CobaltResponse {
-  status: 'stream' | 'redirect' | 'picker' | 'error' | 'rate-limit'
-  url?: string
-  urls?: string
-  filename?: string
-  audio?: string
-  picker?: Array<{ type: string; url: string; thumb?: string }>
-  text?: string
-}
+// Media downloader - múltiplas APIs como fallback
 
 interface VideoResult {
   title: string
@@ -27,6 +10,15 @@ interface VideoResult {
   duration: number
 }
 
+// Instâncias públicas do Cobalt que aceitam requests diretos
+const COBALT_INSTANCES = [
+  'https://cobalt.api.bm4.de',
+  'https://cobalt.plexar.io', 
+  'https://cob.freebudget.club',
+  'https://cobalt.drgns.space',
+  'https://cobalt.sv-studios.net',
+]
+
 export async function downloadWithCobalt(url: string, quality = '1080'): Promise<VideoResult | null> {
   for (const instance of COBALT_INSTANCES) {
     try {
@@ -35,6 +27,7 @@ export async function downloadWithCobalt(url: string, quality = '1080'): Promise
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (compatible; SSTikPro/1.0)',
         },
         body: JSON.stringify({
           url,
@@ -44,29 +37,32 @@ export async function downloadWithCobalt(url: string, quality = '1080'): Promise
           disableMetadata: false,
           filenameStyle: 'pretty',
         }),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(12000),
       })
 
-      if (!response.ok) continue
+      if (!response.ok) {
+        console.log(`[Cobalt] ${instance} returned ${response.status}`)
+        continue
+      }
 
-      const data: CobaltResponse = await response.json()
+      const data = await response.json()
+      console.log(`[Cobalt] ${instance} response:`, JSON.stringify(data).substring(0, 150))
 
-      if (data.status === 'error' || data.status === 'rate-limit') continue
+      if (!data || data.status === 'error' || data.status === 'rate-limit') continue
 
       let videoUrl: string | null = null
       let musicUrl: string | null = null
 
-      if (data.status === 'stream' || data.status === 'redirect') {
+      if (data.status === 'stream' || data.status === 'redirect' || data.status === 'tunnel') {
         videoUrl = data.url || null
         musicUrl = data.audio || null
       } else if (data.status === 'picker' && data.picker) {
-        const videoItem = data.picker.find(p => p.type === 'video') || data.picker[0]
+        const videoItem = data.picker.find((p: { type: string }) => p.type === 'video') || data.picker[0]
         videoUrl = videoItem?.url || null
       }
 
       if (!videoUrl) continue
 
-      // Extract filename as title
       const title = data.filename?.replace(/\.[^.]+$/, '') || 'Video'
 
       return {
@@ -79,7 +75,8 @@ export async function downloadWithCobalt(url: string, quality = '1080'): Promise
         duration: 0,
       }
 
-    } catch {
+    } catch (e) {
+      console.log(`[Cobalt] ${instance} error:`, e)
       continue
     }
   }
