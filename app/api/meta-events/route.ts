@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, getIP } from '@/lib/rateLimit'
 
-const PIXEL_ID = '859453667211129'
+const PIXEL_ID = '2186186862219304'
 
 interface MetaEvent {
   event_name: string
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [event] }),
+        body: JSON.stringify({ data: [event], test_event_code: 'TEST1762' }),
       }
     )
 
