@@ -21,78 +21,70 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Please enter a valid YouTube URL.' }, { status: 400 })
     }
 
-    // Extract video ID
     const videoId = cleanUrl.match(/(?:v=|youtu\.be\/|shorts\/)([^&?\s]+)/)?.[1]
     if (!videoId) {
       return NextResponse.json({ error: 'Invalid YouTube URL.' }, { status: 400 })
     }
 
-    // Use YouTube Search and Download API
+    // Try YTStream API
     const res = await fetch(
-      `https://youtube-search-and-download.p.rapidapi.com/video?id=${videoId}`,
+      `https://ytstream-download-youtube-videos.p.rapidapi.com/dl?id=${videoId}`,
       {
         headers: {
-          'x-rapidapi-host': 'youtube-search-and-download.p.rapidapi.com',
+          'x-rapidapi-host': 'ytstream-download-youtube-videos.p.rapidapi.com',
           'x-rapidapi-key': RAPIDAPI_KEY,
         },
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(20000),
       }
     )
 
     if (!res.ok) {
-      console.error('[YouTube API] Status:', res.status)
-      return NextResponse.json({ error: 'Failed to fetch video info.' }, { status: 500 })
+      console.error('[YTStream] Status:', res.status, await res.text())
+      return NextResponse.json({ error: 'Failed to fetch video.' }, { status: 500 })
     }
 
     const data = await res.json()
-    console.log('[YouTube API] Got response, title:', data.title)
+    console.log('[YTStream] Response keys:', Object.keys(data || {}))
+    console.log('[YTStream] Status:', data?.status)
 
-    if (!data || (!data.formats && !data.adaptiveFormats)) {
-      console.error('[YouTube API] No formats in response:', JSON.stringify(data).substring(0, 200))
+    if (!data || data.status === 'FAIL' || data.status === 'ERROR') {
       return NextResponse.json({ error: 'Video not found or unavailable.' }, { status: 404 })
     }
 
-    // Get best video with audio (formats have both video+audio)
-    // formats[] = combined video+audio (360p typically)
-    // adaptiveFormats[] = video only or audio only (higher quality but need merging)
-    
-    // Find best combined format (has both video and audio)
-    const combinedFormats = (data.formats || []).filter((f: { mimeType: string; url: string }) => 
-      f.mimeType?.includes('video/mp4') && f.url
-    )
-    
-    // Find best quality HD video-only format
-    const hdFormats = (data.adaptiveFormats || []).filter((f: { mimeType: string; qualityLabel: string; url: string }) =>
-      f.mimeType?.includes('video/mp4') && 
-      (f.qualityLabel === '720p' || f.qualityLabel === '1080p') &&
-      f.url
-    ).sort((a: { qualityLabel: string }, b: { qualityLabel: string }) => 
-      parseInt(b.qualityLabel) - parseInt(a.qualityLabel)
-    )
+    // YTStream returns formats with direct download URLs
+    const formats = data.formats || data.adaptFormats || []
+    const allFormats = [...(data.formats || []), ...(data.adaptFormats || [])]
 
-    const bestHD = hdFormats[0]
-    const bestSD = combinedFormats[0] // 360p with audio
+    console.log('[YTStream] Formats count:', allFormats.length)
 
-    if (!bestSD && !bestHD) {
+    // Find best MP4 with audio (mimeType contains video/mp4 and audio)
+    const videoWithAudio = allFormats
+      .filter((f: { mimeType?: string; url?: string; qualityLabel?: string }) => 
+        f.mimeType?.includes('video/mp4') && f.url && f.qualityLabel
+      )
+      .sort((a: { qualityLabel?: string }, b: { qualityLabel?: string }) => {
+        const qa = parseInt(a.qualityLabel || '0')
+        const qb = parseInt(b.qualityLabel || '0')
+        return qb - qa
+      })
+
+    const best = videoWithAudio[0]
+
+    if (!best?.url) {
+      console.error('[YTStream] No valid format found')
       return NextResponse.json({ error: 'No downloadable format found.' }, { status: 404 })
     }
 
-    const thumbnail = data.thumbnail?.[data.thumbnail.length - 1]?.url || 
-                      `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+    const thumbnail = data.thumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
 
     return NextResponse.json({
       success: true,
       video: {
         title: data.title || 'YouTube Video',
         cover: thumbnail,
-        author: {
-          name: data.channelTitle || 'YouTube',
-          avatar: null,
-        },
-        // HD video only (no audio) - use as hdPlay
-        hdPlay: bestHD?.url || bestSD?.url || null,
-        // SD combined (video+audio) - use as play
-        play: bestSD?.url || null,
+        author: { name: data.channelTitle || 'YouTube', avatar: null },
+        hdPlay: best.url,
+        play: best.url,
         music: null,
         duration: parseInt(data.lengthSeconds || '0'),
       },
