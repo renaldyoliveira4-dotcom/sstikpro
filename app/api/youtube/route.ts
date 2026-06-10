@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
     const data = await res.json()
     console.log('[YouTube API] Got response, title:', data.title)
 
-    if (!data || data.status !== 'OK') {
+    if (!data || (!data.formats && !data.adaptiveFormats)) {
+      console.error('[YouTube API] No formats in response:', JSON.stringify(data).substring(0, 200))
       return NextResponse.json({ error: 'Video not found or unavailable.' }, { status: 404 })
     }
 
