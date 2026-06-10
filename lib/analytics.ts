@@ -94,40 +94,28 @@ export function trackPWAInstall(outcome: 'accepted' | 'dismissed') {
 export function trackTelegramClick() {
   track('telegram_click', { event_category: 'social' })
 }
+// ===== META PIXEL (Client-side) =====
+declare global {
+  interface Window {
+    fbq: (...args: unknown[]) => void
+  }
+}
 
-// ===== META CONVERSIONS API =====
-async function sendMeta(eventName: string, data?: Record<string, unknown>) {
+function sendFbq(eventName: string, params?: Record<string, unknown>) {
   try {
-    // Get fbp and fbc cookies
-    const fbp = typeof document !== 'undefined' 
-      ? document.cookie.match(/_fbp=([^;]+)/)?.[1] || undefined
-      : undefined
-    const fbc = typeof document !== 'undefined'
-      ? document.cookie.match(/_fbc=([^;]+)/)?.[1] || undefined
-      : undefined
-
-    await fetch('/api/meta-events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event_name: eventName,
-        event_source_url: typeof window !== 'undefined' ? window.location.href : 'https://sstikpro.com.br',
-        fbc,
-        fbp,
-        custom_data: data,
-      }),
-    })
+    if (typeof window === 'undefined' || !window.fbq) return
+    window.fbq('track', eventName, params)
   } catch {}
 }
 
 export function trackMetaPageView() {
-  sendMeta('PageView')
+  sendFbq('PageView')
 }
 
 export function trackMetaDownload(platform: string) {
-  sendMeta('Lead', { platform, content_name: `download_${platform}` })
+  sendFbq('Lead', { content_name: platform, content_category: 'download' })
 }
 
 export function trackMetaViewContent(platform: string) {
-  sendMeta('ViewContent', { platform, content_name: `view_${platform}` })
+  sendFbq('ViewContent', { content_name: platform })
 }
