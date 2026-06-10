@@ -250,10 +250,10 @@ export default function HeroSection() {
               <div className="p-4 flex flex-col sm:flex-row gap-2">
                 {video.hdPlay && (
                   <a
-                    href={platform === 'youtube' ? video.hdPlay! : `/api/proxy?url=${encodeURIComponent(video.hdPlay)}&filename=sstikpro-hd.mp4&type=video`}
-                    download={platform === 'youtube' ? undefined : 'sstikpro-hd.mp4'}
-                    target={platform === 'youtube' ? '_blank' : undefined}
-                    rel={platform === 'youtube' ? 'noopener noreferrer' : undefined}
+                    href={platform === 'youtube' || platform === 'instagram' ? video.hdPlay! : `/api/proxy?url=${encodeURIComponent(video.hdPlay)}&filename=sstikpro-hd.mp4&type=video`}
+                    download={platform === 'youtube' || platform === 'instagram' ? undefined : 'sstikpro-hd.mp4'}
+                    target={platform === 'youtube' || platform === 'instagram' ? '_blank' : undefined}
+                    rel={platform === 'youtube' || platform === 'instagram' ? 'noopener noreferrer' : undefined}
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
                     style={{ background: platform === 'tiktok' ? 'linear-gradient(135deg, #4F6D7A, #6B8793)' : platform === 'instagram' ? 'linear-gradient(135deg, #833AB4, #E1306C)' : 'linear-gradient(135deg, #CC0000, #8B0000)' }}
                   >
