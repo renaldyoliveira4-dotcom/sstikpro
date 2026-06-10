@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { trackLinkColado, trackCliqueBaixar, trackDownloadSucesso, trackDownloadErro, trackPlatformSwitch } from '@/lib/analytics'
+import { trackLinkColado, trackCliqueBaixar, trackDownloadSucesso, trackDownloadErro, trackPlatformSwitch, trackMetaDownload, trackMetaViewContent } from '@/lib/analytics'
 import { Download, Link as LinkIcon, CheckCircle, Loader2, ShieldCheck, Zap, Star, Music, User, AlertCircle } from 'lucide-react'
 import PWAInstallButton from '@/components/ui/PWAInstallButton'
 
@@ -50,6 +50,7 @@ export default function HeroSection() {
     setStatus('loading')
     setVideo(null)
     trackCliqueBaixar(platform)
+    trackMetaViewContent(platform)
 
     try {
       const endpoint = platform === 'tiktok' ? '/api/download' : platform === 'instagram' ? '/api/instagram' : '/api/youtube'
@@ -80,6 +81,7 @@ export default function HeroSection() {
       setVideo(data.video)
       setStatus('success')
       trackDownloadSucesso(platform, 'hd')
+      trackMetaDownload(platform)
     } catch {
       setErrorMsg('Connection error. Please try again.')
       setStatus('error')
