@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit, getIP } from '@/lib/rateLimit'
 
-const PIXEL_ID = process.env.META_PIXEL_ID || '859453667211129'
+const PIXEL_ID = '859453667211129'
 
 interface MetaEvent {
   event_name: string
@@ -31,11 +31,9 @@ export async function POST(request: NextRequest) {
     }
 
     const userAgent = request.headers.get('user-agent') || ''
-    const token = process.env.META_ACCESS_TOKEN
+    const token = process.env.META_ACCESS_TOKEN || 'EAAR8h06tajsBRgbfcGPiP7F5V99dT6ZBw97TP4jQ0R4BE20Ocx9L8uV7CoPfus9JZB3V36IS1l3RpAgJ8HwsgZCbLm8jrBfkvhswBG3zsoEMKABKYvvNy4KN2VKzhpSHWzqJImitgECfUPt5JXhjYq5biVByZCWBFaRoYnikAKOuRv1uFaZBGCSbLak4ftfuG0wZDZD'
 
-    if (!token) {
-      return NextResponse.json({ error: 'No access token configured' }, { status: 500 })
-    }
+
 
     const event: MetaEvent = {
       event_name,
