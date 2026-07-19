@@ -6,15 +6,6 @@ export default function Footer() {
 
   return (
     <footer style={{ background: '#1E293B' }} className="text-slate-300">
-      {/* Ad Banner Footer */}
-      <div className="border-b border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="ad-placeholder rounded-lg h-16 md:h-20" style={{ background: 'rgba(255,255,255,0.05)', border: '2px dashed rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)' }}>
-            AD — Footer Banner (728×90 Desktop / 320×50 Mobile)
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -28,7 +19,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed">
-              The fastest and most reliable TikTok video downloader. Free, no watermark, HD quality.
+              The fastest and most reliable video downloader. Free, no watermark, HD quality.
             </p>
             <div className="flex gap-3 mt-4">
               <a href="https://t.me/+CItjrX7UUoIwNjZh" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors" aria-label="Telegram">
@@ -53,8 +44,8 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Tools</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/" className="hover:text-white transition-colors">TikTok Downloader</Link></li>
-              <li><span className="text-slate-500 cursor-not-allowed">Instagram Downloader (soon)</span></li>
-              <li><span className="text-slate-500 cursor-not-allowed">YouTube Shorts (soon)</span></li>
+              <li><Link href="/" className="hover:text-white transition-colors">Instagram Downloader</Link></li>
+              <li><Link href="/" className="hover:text-white transition-colors">YouTube Downloader</Link></li>
             </ul>
           </div>
 
@@ -80,7 +71,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-6 border-t border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
           <p>© {currentYear} SSTikPro. All rights reserved.</p>
-          <p>Not affiliated with TikTok or ByteDance Ltd.</p>
+          <p>Not affiliated with TikTok, Instagram or YouTube.</p>
         </div>
       </div>
     </footer>

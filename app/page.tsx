@@ -20,7 +20,7 @@ const jsonLdSoftware = {
   operatingSystem: 'Web, iOS, Android',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   description: 'Free TikTok video downloader without watermark. Download HD quality TikTok videos instantly.',
-  aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', ratingCount: '12547' },
+  // aggregateRating removed - will add back with real data
 }
 
 const jsonLdFaq = {

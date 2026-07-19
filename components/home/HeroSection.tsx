@@ -64,9 +64,9 @@ export default function HeroSection() {
 
       if (data.comingSoon) {
         if (platform === 'instagram') {
-          setErrorMsg('📸 Instagram download coming soon! Use TikTok downloader for now.')
+          // Instagram handled below
         } else {
-          setErrorMsg('🚀 YouTube download coming soon! Use TikTok downloader for now.')
+          // YouTube handled below
         }
         setStatus('error')
         return
@@ -317,8 +317,8 @@ export default function HeroSection() {
         {/* Stats */}
         <div className="flex flex-wrap justify-center gap-8 mt-10 text-white/90">
           {[
-            { value: '10M+', label: 'Videos Downloaded' },
-            { value: '4.9★', label: 'User Rating' },
+            { value: '100%', label: 'Free Forever' },
+            { value: 'HD', label: 'Max Quality' },
             { value: '100%', label: 'Free Forever' },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
